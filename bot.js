@@ -16,13 +16,23 @@ const client = new Client({
 client.config = config;
 initializePlayer(client);
 
-client.on("ready", () => {
+client.on("ready", async () => {
     console.log(`${colors.cyan}[ SYSTEM ]${colors.reset} ${colors.green}Client logged as ${colors.yellow}${client.user.tag}${colors.reset}`);
     console.log(`${colors.cyan}[ MUSIC ]${colors.reset} ${colors.green}Riffy Music System Ready 🎵${colors.reset}`);
     console.log(`${colors.cyan}[ TIME ]${colors.reset} ${colors.gray}${new Date().toISOString().replace('T', ' ').split('.')[0]}${colors.reset}`);
+    
     client.riffy.init(client.user.id);
+
+    // ✅ GIF Avatar Set
+    try {
+        const avatar = fs.readFileSync(path.join(__dirname, 'avatar.gif'));
+        await client.user.setAvatar(avatar);
+        console.log(`${colors.cyan}[ AVATAR ]${colors.reset} ${colors.green}GIF avatar set successfully ✅${colors.reset}`);
+    } catch (error) {
+        console.log(`${colors.cyan}[ AVATAR ]${colors.reset} ${colors.red}Failed to set GIF avatar ❌${colors.reset}`);
+        console.error(error);
+    }
 });
-client.config = config;
 
 fs.readdir("./events", (_err, files) => {
   files.forEach((file) => {
@@ -33,7 +43,6 @@ fs.readdir("./events", (_err, files) => {
     delete require.cache[require.resolve(`./events/${file}`)];
   });
 });
-
 
 client.commands = [];
 fs.readdir(config.commandsDir, (err, files) => {
@@ -54,7 +63,6 @@ fs.readdir(config.commandsDir, (err, files) => {
   });
 });
 
-
 client.on("raw", (d) => {
     const { GatewayDispatchEvents } = require("discord.js");
     if (![GatewayDispatchEvents.VoiceStateUpdate, GatewayDispatchEvents.VoiceServerUpdate].includes(d.t)) return;
@@ -68,6 +76,7 @@ client.login(config.TOKEN || process.env.TOKEN).catch((e) => {
   console.log(`${colors.cyan}[ TOKEN ]${colors.reset} ${colors.red}Authentication Failed ❌${colors.reset}`);
   console.log(`${colors.gray}Error: Turn On Intents or Reset New Token${colors.reset}`);
 });
+
 connectToDatabase().then(() => {
   console.log('\n' + '─'.repeat(40));
   console.log(`${colors.magenta}${colors.bright}🕸️  DATABASE STATUS${colors.reset}`);
